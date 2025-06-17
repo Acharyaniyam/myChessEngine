@@ -1,110 +1,66 @@
 """
-This is our main driver file. It will be responsible for handling user input and displaying the current 
-GameState object.
+This class is responsible for starting all the information about the current state of a chess game. 
+It will also be responsible for determining the valid moves at the current state
+It will also keep a move log.
 """
 
-import pygame as p
-import ChessEngine
+class GameState():
+    def __init__(self):
+        #board is an BxB 2d list, each element of the list has 2 characters.
+        #The first character represents the color of the piece, 'b' or 'w'
+        #The second character represe4ntys the type of the piece, 'K', 'Q'....
+        #"--" represents an empty space with no piece.
+        self.board = [
+            ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR"],
+            ["bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"],
+            ["--", "--", "--", "--", "--", "--", "--", "--"],
+            ["--", "--", "--", "--", "--", "--", "--", "--"],
+            ["--", "--", "--", "--", "--", "--", "--", "--"],
+            ["--", "--", "--", "--", "--", "--", "--", "--"],
+            ["wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"],
+            ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"]]
+        self.whiteToMove = True
+        self.moveLog = []
+        #return self.board
+
+    def makeMove(self, move):
+        self.board[move.startRow][move.startCol] = "--" #because when we move a piece, when leave behind the square blank
+        self.board[move.endRow][move.endCol] = move.pieceMoved #and now it moves a piece into its end position
+        self.moveLog.append(move) #log the move so we can undo it later
+        self.whiteToMove = not self.whiteToMove #swap players
 
 
-WIDTH = HEIGHT = 512 #400 is also good option
-DIMENSION = 8 #dimension of a chess board are 8x8
-SQ_SIZE  = HEIGHT // DIMENSION
-MAX_FPS = 15 #for animations later on
-IMAGES = {}
-
-"""
-Initialize a global dictinoary of images. This will be called exactly once in the main.
-"""
-
-def loadImages():
-    pieces = ['wp', 'wR', 'wN', 'wQ', 'wK', 'wB', 'bp', 'bR', 'bN', 'bQ', 'bK', 'bB']
-    for piece in pieces:
-        IMAGES[piece] = p.transform.scale(p.image.load("images/" + piece +".png"), (SQ_SIZE, SQ_SIZE)) #transforming the image of the piece taking up the entire size of a square
-    #Note: we can access an image by saving 'IMAGES['wp']
-
-"""
-The main driver for our code. This will handle user input and updating the graphics
-"""
-
-def main():
-    p.init()
-    screen = p.display.set_mode((WIDTH, HEIGHT))
-    clock = p.time.Clock()
-    screen.fill(p.Color("white"))
-    gs = ChessEngine.GameState()
-    #print(gameState.board) #just a step to check the board
-
-    loadImages()
-    running = True
-
-    SQselected = () #no square is selected, keeps track of the last click of the user (tuple: row, column)
-    playerClicks = [] #keeps track of player clicks which is 'piece from' and 'piece to' locations(two tuples: )
-    while running: 
-        for event in p.event.get():
-            if event.type == p.QUIT:
-                running = False
-            elif event.type == p.MOUSEBUTTONDOWN:
-                location = p.mouse.get_pos() #(x,y) location of mouse
-                col = location[0]//SQ_SIZE #because location =column* SQ_SIZE
-                row = location[1]//SQ_SIZE  
-                if SQselected == (row,col): #checks to see if the player selected the same square twice
-                    SQselected = () #this deselects the square/piece
-                    playerClicks = [] #clear player clicks, renewing the selecting process
-                else: 
-                    SQselected = (row,col)
-                    playerClicks.append(SQselected) #append for both 1st and 2nd click
-                if len(playerClicks) ==2: #after the second click
-                    move = ChessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
-                    print(move.getChessNotation())
-                    gs.makeMove(move)
-                    SQselected = () #reset user click
-                    playerClicks = []
-                
-        drawGameState(screen, gs)
-        clock.tick(MAX_FPS)
-        p.display.flip()
-
-
-"""
-Responsible for all the graphics within a current game state.
-"""
-
-def drawGameState(screen, gs):
-    drawBoard(screen) #draw the squares on the board
-    #add in piece highlighting or move suggestions (later)
-    drawPieces(screen, gs.board) #draw the piece on top of those squares 
-
-
-
-"""
-Draw the squares on the board.
-"""
-def drawBoard(screen):
-    colors = [p.Color("white"), p.Color("darkgreen")]
-    for row in range(DIMENSION): #here i and j are rows and columns in the chess board 
-        for column in range(DIMENSION):
-            if (row+column) % 2 == 0:
-                SQ_Color = p.Color("white")
-            else:
-                SQ_Color = p.Color("darkgreen")
-
-
-            p.draw.rect(screen, SQ_Color, p.Rect(column*SQ_SIZE, row*SQ_SIZE, SQ_SIZE, SQ_SIZE)) #draw the rectangle on the SCREEN, with the SQ_Color and the rectangle object with col * row dimensions
-
-"""
-Draw the pieces on the board using the current GamState.board
-"""
-def drawPieces(screen, board):
-    for row in range(DIMENSION):
-        for column in range(DIMENSION):
-            square = board[row][column] #this goes through the row number and then the column number
-            if square != "--": #non empty
-                screen.blit(IMAGES[square], p.Rect(column*SQ_SIZE, row*SQ_SIZE, SQ_SIZE, SQ_SIZE))
     
+class Move():
+
+    # maps key to values
+    # key : value
+    #the following is done because white queen should always be in white square and the square 1a should have a white rook
+    ranksToRows = {"1":7, "2":6, "3":5, "4":4,
+                    "5":3, "6":2, "7":1, "8":0}
+    rowsToRanks = {v: k for k, v in ranksToRows.items()}
+
+    filesToCols = {"a":0, "b":1, "c":2, "d":3,
+                    "e":4, "f":5, "g":6, "h":7}
+    colsToFiles = {v:k for k,v in filesToCols.items()}
+
+    def __init__(self, startSq, endSq, board):
+        self.startRow = startSq[0] #because startSq is a tuple: (row, col) from the 'SQselected' variable : this one is for source click
+        self.startCol = startSq[1]
+        self.endRow = endSq[0] #because there are 2 SQselected appended into playerClicks: this one is for dest click
+        self.endCol = endSq[1]
+        self.pieceMoved = board[self.startRow][self.startCol]
+        self.pieceCaptured = board[self.endRow][self.endCol]
+        
     
+    def getChessNotation(self):
+        #return self.getRankFile(self.startRow, self.startCol) + " "+ self.getRankFile(self.endRow, self.endCol)
+        notation = ""
+        piece = self.pieceMoved[1]
 
+        return piece + self.getRankFile(self.startRow, self.startCol) + " -> " + piece + self.getRankFile(self.endRow, self.endCol)
 
-if __name__ == "__main__": 
-    #reason to do this is if we want to call the main() function in another tab, we will type __main__, otherwise the main() function will only run in this python file 
-    main()
+    def getRankFile(self, row, col):
+        return self.colsToFiles[col] + self.rowsToRanks[row] #concatinate to get Notation of a piece like '1a'
+
+        
