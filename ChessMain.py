@@ -72,7 +72,7 @@ def main():
             #key handlers
             elif event.type == p.KEYDOWN:
                 if event.key == p.K_z: #undo when 'z' is pressed
-                    gs.undoMove()
+                    gs.undoMove(move)
                     moveMade = True #in order to trigger the moveMade, create another assortment of valid moves 
 
         if moveMade: #creates another assortment of valid moves
