@@ -19,6 +19,8 @@ class GameState():
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"],
             ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"]]
+        self.moveFunctions = {"p": self.getPawnMoves, "R": getRookMoves, "N": getKnightMoves,
+        "B": getBishopMoves, "Q": getQu}
         self.whiteToMove = True
         self.moveLog = []
         #return self.board
@@ -54,11 +56,11 @@ class GameState():
     All moves without considering checks
     """
     def getAllPossibleMoves(self):
-        moves  = [Move((6,4), (4,4), self.board)]
+        moves  = []
         for row in range(len(self.board)): #number of rows
             for col in range(len(self.board[row])): #number of columns in a given row
                 turn = self.board[row][col][0]
-                if (turn == "w" and self.whiteToMove) and (turn == "b" and not self.whiteToMove):
+                if (turn == "w" and self.whiteToMove) or (turn == "b" and not self.whiteToMove):                    
                     piece = self.board[row][col][1]
                     if piece == 'p':
                         self.getPawnMoves(row, col, moves)
@@ -76,38 +78,78 @@ class GameState():
 
     """
     Get all the pawn moves for the pawn located at the row, col and add these moves to the list
+    White pawns move up the board and black pawns move down the board.
+    Pawns can not go backwards.
+    Pawns capture diagonally forward.
+    Pawns can move 2 squares forward if its the first move.
+    If you can make a one-square move, you can possibly make a two-square move.
     """
-    def getPawnMoves(row, col, moves):
-        pass
+    def getPawnMoves(self,row, col, moves):
+        if self.whiteToMove == True: #white pawn moves
+            if self.board[row-1][col] == "--" : #One square pawn advance
+                moves.append(Move((row,col), (row-1,col), self.board))
+                if row == 6 and self.board[row-2][col] == "--": #Two square pawn advance
+                    moves.append(Move((row,col), (row-2,col), self.board))
+            
+            #Captures by white pawn:
+            #Capture to the left -> column should be greater than 0. Can't left capture beyond the board limit
+            if col > 0:
+                if self.board[row - 1][col - 1][0] == "b": #black piece to capture
+                    moves.append(Move((row, col), (row-1, col-1), self.board))
+            
+            #Captures to the right -> column should be less than 7
+            if col < 7:
+                if self.board[row - 1][col + 1][0] == "b":
+                    moves.append(Move((row, col), (row -1, col + 1), self.board))
+
+        else: #black pawn moves
+            if self.board[row+1][col] == "--":
+                moves.append(Move((row,col), (row+1, col), self.board))
+                if row == 2 and self.board[row+2][col] == "--":
+                    moves.append(Move((row,col), (row+2,col), self.board))
+
+            #Captures by black pawn:
+            #Capture to the left -> Column should be greater than 0 again
+            if col > 0:
+                if self.board[row+1][col-1][0] == "b": 
+                    moves.append(Move((row, col), (row + 1, col - 1), self.board))
+            
+            #Captures to the right - Column should be less than 7
+            if col < 7:
+                if self.board[row + 1][col + 1][0] == "b":
+                    moves.append(Move((row, col), (row + 1, col + 1), self.board))
+            
+
+
     
     """
     Get all the Rook moves for the Rook located at the row, col and add these moves to the list
     """
-    def getRookMoves(row, col, moves):
+    def getRookMoves(self, row, col, moves):
         pass
     
     """
     Get all the Knight moves for the knight located at the row, col and add these moves to the list
     """
-    def getKnightMoves(row, col, moves):
+    def getKnightMoves(self, row, col, moves):
         pass
 
     """
     Get all the Bishop moves for the Bishop located at the row, col and add these moves to the list
     """
-    def getBishopMoves(row, col, moves):
+    def getBishopMoves(self, row, col, moves):
         pass
 
     """
     Get all the Queen moves for the Queen located at the row, col and add these moves to the list
     """
-    def getQueenMoves(row, col, moves):
+    def getQueenMoves(self, row, col, moves):
         pass
 
     """
     Get all the King moves for the King located at the row, col and add these moves to the list
     """
-    def getKingMoves(row, col, moves):
+    def getKingMoves(self, row, col, moves):
         pass
 
 
