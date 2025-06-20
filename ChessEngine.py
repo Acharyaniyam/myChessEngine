@@ -13,14 +13,14 @@ class GameState():
         self.board = [
             ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR"],
             ["bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"],
+            ["--", "--", "--", "wp", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
-            ["--", "--", "--", "--", "--", "--", "--", "--"],
-            ["--", "--", "--", "--", "--", "--", "--", "--"],
+            ["--", "--", "wR", "--", "--", "bB", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"],
             ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"]]
-        self.moveFunctions = {"p": self.getPawnMoves, "R": getRookMoves, "N": getKnightMoves,
-        "B": getBishopMoves, "Q": getQu}
+        self.moveFunctions = {"p": self.getPawnMoves, "R": self.getRookMoves, "N": self.getKnightMoves,
+        "B": self.getBishopMoves, "Q": self.getQueenMoves, "K": self.getKingMoves}
         self.whiteToMove = True
         self.moveLog = []
         #return self.board
@@ -62,19 +62,9 @@ class GameState():
                 turn = self.board[row][col][0]
                 if (turn == "w" and self.whiteToMove) or (turn == "b" and not self.whiteToMove):                    
                     piece = self.board[row][col][1]
-                    if piece == 'p':
-                        self.getPawnMoves(row, col, moves)
-                    elif piece == 'R':
-                        self.getRookMoves(row, col, moves)
-                    elif piece == 'N':
-                        self.getKnightMoves(row, col, moves)
-                    elif piece == 'B':
-                        self.getBishopMoves(row, col, moves)
-                    elif piece == 'Q':
-                        self.getQueenMoves(row, col, moves)
-                    elif piece == 'K':
-                        self.getKingMoves(row, col, moves)
+                    self.moveFunctions[piece](row, col, moves) #calls the appropriate move function based on piece type
         return moves
+
 
     """
     Get all the pawn moves for the pawn located at the row, col and add these moves to the list
@@ -105,49 +95,148 @@ class GameState():
         else: #black pawn moves
             if self.board[row+1][col] == "--":
                 moves.append(Move((row,col), (row+1, col), self.board))
-                if row == 2 and self.board[row+2][col] == "--":
+                if row == 1 and self.board[row+2][col] == "--":
                     moves.append(Move((row,col), (row+2,col), self.board))
 
             #Captures by black pawn:
             #Capture to the left -> Column should be greater than 0 again
             if col > 0:
-                if self.board[row+1][col-1][0] == "b": 
+                if self.board[row+1][col-1][0] == "w": 
                     moves.append(Move((row, col), (row + 1, col - 1), self.board))
             
             #Captures to the right - Column should be less than 7
             if col < 7:
-                if self.board[row + 1][col + 1][0] == "b":
+                if self.board[row + 1][col + 1][0] == "w":
                     moves.append(Move((row, col), (row + 1, col + 1), self.board))
-            
-
 
     
     """
     Get all the Rook moves for the Rook located at the row, col and add these moves to the list
+    To things to check:
+    1. Move as many squares as you can until you run into a piece
+    Check going up; is the square above me is empty? if so check the next square until you run into a piece (for loop or while loop)
+    It will be a valid move if run into a opposite color piece or is empty and then you end the loop(break)
+    2. We also stop if we run into the edge of the board
+    DO it in all four directions
     """
     def getRookMoves(self, row, col, moves):
-        pass
-    
+        if self.whiteToMove == True: #white Rook moves
+            #Rook moving upward
+            for i in range(1,8):
+                    if row - i < 0: #trying to see the edge of the board. Since here the rook moves upward only, row number should be greater than 0 only
+                        break
+                    if self.board[row - i][col] == "--":
+                        moves.append(Move((row,col), (row - i, col), self.board))
+                    elif self.board[row -i][col][0] == "b":
+                        moves.append(Move((row,col), (row - i, col), self.board))
+                        break
+                    else:
+                        break
+            #Rook moving downward
+            for i in range(1,8):
+                    if row + i > 7 : #trying to see the edge of the board. Since here the rook moves downward only, row number should be less than 8
+                        break
+                    if self.board[row + i][col] == "--":
+                        moves.append(Move((row,col), (row + i, col), self.board))
+                    elif self.board[row + i][col][0] == "b":
+                        moves.append(Move((row,col), (row + i, col), self.board))
+                        break
+                    else:
+                        break
+            #Rook moving rightward
+            for i in range(1,8):
+                    if col + i > 7 : #trying to see the edge of the board. Since here the rook moves rightward only, column number should be less than 8
+                        break
+                    if self.board[row][col + 1] == "--":
+                        moves.append(Move((row,col), (row, col + i), self.board))
+                    elif self.board[row][col + 1][0] == "b":
+                        moves.append(Move((row,col), (row, col + i), self.board))
+                        break
+                    else:
+                        break
+            #Rook moving leftward
+            for i in range(1,8):
+                    if col - i < 0: #trying to see the edge of the board. Since here the rook moves leftward only, row number should be greater than 0 only
+                        break
+                    if self.board[row][col - i] == "--":
+                        moves.append(Move((row,col), (row, col - i), self.board))
+                    elif self.board[row][col - i][0] == "b":
+                        moves.append(Move((row,col), (row, col - i), self.board))
+                        break
+                    else:
+                        break
+        else:
+                        #Rook moving upward
+            for i in range(1,8):
+                    if row - i < 0: #trying to see the edge of the board. Since here the rook moves upward only, row number should be greater than 0 only
+                        break
+                    if self.board[row - i][col] == "--":
+                        moves.append(Move((row,col), (row - i, col), self.board))
+                    elif self.board[row -i][col][0] == "w":
+                        moves.append(Move((row,col), (row - i, col), self.board))
+                        break
+                    else:
+                        break
+            #Rook moving downward
+            for i in range(1,8):
+                    if row + i > 7 : #trying to see the edge of the board. Since here the rook moves downward only, row number should be less than 8
+                        break
+                    if self.board[row + i][col] == "--":
+                        moves.append(Move((row,col), (row + i, col), self.board))
+                    elif self.board[row + i][col][0] == "w":
+                        moves.append(Move((row,col), (row + i, col), self.board))
+                        break
+                    else:
+                        break
+            #Rook moving rightward
+            for i in range(1,8):
+                    if col + i > 7 : #trying to see the edge of the board. Since here the rook moves rightward only, column number should be less than 8
+                        break
+                    if self.board[row][col + 1] == "--":
+                        moves.append(Move((row,col), (row, col + i), self.board))
+                    elif self.board[row][col + 1][0] == "w":
+                        moves.append(Move((row,col), (row, col + i), self.board))
+                        break
+                    else:
+                        break
+            #Rook moving leftward
+            for i in range(1,8):
+                    if col - i < 0: #trying to see the edge of the board. Since here the rook moves leftward only, row number should be greater than 0 only
+                        break
+                    if self.board[row][col - i] == "--":
+                        moves.append(Move((row,col), (row, col - i), self.board))
+                    elif self.board[row][col - i][0] == "w":
+                        moves.append(Move((row,col), (row, col - i), self.board))
+                        break
+                    else:
+                        break
+                    
     """
     Get all the Knight moves for the knight located at the row, col and add these moves to the list
+    Similar to the King -> interate over the 8 possible moves, checking for the edge of the board. 
+    Dont worry what is around them; worry about the square they are landing on whether its an enemy piece or not.
     """
     def getKnightMoves(self, row, col, moves):
         pass
 
     """
     Get all the Bishop moves for the Bishop located at the row, col and add these moves to the list
+    Same idea as rook but instead of up down left right we are looking at diagonals
+
     """
     def getBishopMoves(self, row, col, moves):
         pass
 
     """
     Get all the Queen moves for the Queen located at the row, col and add these moves to the list
+    Mix of bishop and rook. Do at last
     """
     def getQueenMoves(self, row, col, moves):
         pass
 
     """
     Get all the King moves for the King located at the row, col and add these moves to the list
+    Iterate over the possible 8 squares to see if you can move around. Check for edge of the board.
     """
     def getKingMoves(self, row, col, moves):
         pass
@@ -198,4 +287,4 @@ class Move():
         return self.colsToFiles[col] + self.rowsToRanks[row] #concatinate to get Notation of a piece like '1a'
 
 
-        
+  
