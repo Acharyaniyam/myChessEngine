@@ -13,11 +13,11 @@ class GameState():
         self.board = [
             ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR"],
             ["bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"],
-            ["--", "--", "--", "wp", "--", "--", "--", "--"],
+            ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "wR", "--", "--", "bB", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
-            ["wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"],
+            ["wp", "wp", "wp", "--", "--", "wp", "wp", "wp"],
             ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"]]
         self.moveFunctions = {"p": self.getPawnMoves, "R": self.getRookMoves, "N": self.getKnightMoves,
         "B": self.getBishopMoves, "Q": self.getQueenMoves, "K": self.getKingMoves}
@@ -217,7 +217,12 @@ class GameState():
     Dont worry what is around them; worry about the square they are landing on whether its an enemy piece or not.
     """
     def getKnightMoves(self, row, col, moves):
-        pass
+        """
+        knightMoves = ((2,1),(2,-1),(1,2),(1,-2),(-1,2),(-1,-2),(-2,1),(-2,-1))
+        enemyPiece = "b" if self.whiteToMove else "w"
+        for move in knightMoves:
+            endRow = row + move
+        """
 
     """
     Get all the Bishop moves for the Bishop located at the row, col and add these moves to the list
@@ -225,24 +230,55 @@ class GameState():
 
     """
     def getBishopMoves(self, row, col, moves):
-        pass
+        directions = ((1,1),(1,-1),(-1,1),(-1,-1))
+        enemyPiece = "b" if self.whiteToMove else "w"
+        for direction in directions:
+            for i in range(1,8):
+                endRow = row + direction[0] * i
+                endCol = col + direction[1] * i
+                if 0 <= endRow < 8 and 0 <= endCol < 8:
+                    if self.board[endRow][endCol] == "--":
+                        moves.append(Move((row,col), (endRow, endCol), self.board))
+                    elif self.board[endRow][endCol][0] == enemyPiece:
+                        moves.append(Move((row,col), (endRow, endCol), self.board))
+                    else:
+                        break
+                else:
+                    break
+
 
     """
     Get all the Queen moves for the Queen located at the row, col and add these moves to the list
     Mix of bishop and rook. Do at last
     """
     def getQueenMoves(self, row, col, moves):
-        pass
+        self.getBishopMoves(row,col,moves)
+        self.getRookMoves(row,col,moves)
 
     """
     Get all the King moves for the King located at the row, col and add these moves to the list
     Iterate over the possible 8 squares to see if you can move around. Check for edge of the board.
     """
     def getKingMoves(self, row, col, moves):
-        pass
+        kingMoves = ((1,0),(-1,0),(0,1),(0,-1),(1,1),(1,-1),(-1,1),(-1,-1))
+        enemyPiece = "b" if self.whiteToMove else "w"
+        for move in kingMoves:
+            endRow = row + move[0]
+            endCol = col + move[1]
+            if 0 <= endRow < 8 and 0 <= endCol < 8:
+                if self.board[endRow][endCol] == "--":
+                    moves.append(Move((row, col), (endRow, endCol), self.board))
+                elif self.board[endRow][endCol] == enemyPiece:
+                    moves.append(Move((row, col), (endRow, endCol), self.board))
+                else:
+                    break
+            else:
+                break
 
+            
+            
 
-
+        
 class Move():
 
     # maps key to values
