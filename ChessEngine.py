@@ -217,12 +217,17 @@ class GameState():
     Dont worry what is around them; worry about the square they are landing on whether its an enemy piece or not.
     """
     def getKnightMoves(self, row, col, moves):
-        """
         knightMoves = ((2,1),(2,-1),(1,2),(1,-2),(-1,2),(-1,-2),(-2,1),(-2,-1))
-        enemyPiece = "b" if self.whiteToMove else "w"
+        allyPiece = "w" if self.whiteToMove else "b"
         for move in knightMoves:
-            endRow = row + move
-        """
+            endRow = row + move[0]
+            endCol = col + move[1]
+            if 0 <= endRow < 8 and 0 <= endCol < 8:
+                if self.board[endRow][endCol][0] != allyPiece:
+                    moves.append(Move((row, col), (endRow, endCol), self.board))
+                
+            
+        
 
     """
     Get all the Bishop moves for the Bishop located at the row, col and add these moves to the list
@@ -237,9 +242,8 @@ class GameState():
                 endRow = row + direction[0] * i
                 endCol = col + direction[1] * i
                 if 0 <= endRow < 8 and 0 <= endCol < 8:
-                    if self.board[endRow][endCol] == "--":
-                        moves.append(Move((row,col), (endRow, endCol), self.board))
-                    elif self.board[endRow][endCol][0] == enemyPiece:
+                    piece = self.board[endRow][endCol]
+                    if piece == "--" or piece[0] == enemyPiece: 
                         moves.append(Move((row,col), (endRow, endCol), self.board))
                     else:
                         break
@@ -266,17 +270,11 @@ class GameState():
             endRow = row + move[0]
             endCol = col + move[1]
             if 0 <= endRow < 8 and 0 <= endCol < 8:
-                if self.board[endRow][endCol] == "--":
+                piece = self.board[endRow][endCol]
+                if piece == "--" or piece[0] == enemyPiece:
                     moves.append(Move((row, col), (endRow, endCol), self.board))
-                elif self.board[endRow][endCol] == enemyPiece:
-                    moves.append(Move((row, col), (endRow, endCol), self.board))
-                else:
-                    break
-            else:
-                break
 
-            
-            
+
 
         
 class Move():
