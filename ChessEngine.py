@@ -17,13 +17,15 @@ class GameState():
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "wR", "--", "--", "bB", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
-            ["wp", "wp", "wp", "--", "--", "wp", "wp", "wp"],
+            ["wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"],
             ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"]]
         self.moveFunctions = {"p": self.getPawnMoves, "R": self.getRookMoves, "N": self.getKnightMoves,
         "B": self.getBishopMoves, "Q": self.getQueenMoves, "K": self.getKingMoves}
         self.whiteToMove = True
         self.moveLog = []
-        #return self.board
+        self.whiteKingLocation = (7,4)
+        self.blackKingLocation = (0,4)
+
 
     """
     Takes a move as a paramater and executes it (will not work for castling, en passant, and pawn promotion)
@@ -33,6 +35,14 @@ class GameState():
         self.board[move.endRow][move.endCol] = move.pieceMoved #and now it moves a piece into its end position
         self.moveLog.append(move) #log the move so we can undo it later
         self.whiteToMove = not self.whiteToMove #swap players
+        #update the King's location
+        if move.pieceMoved == 'wK':
+            self.whiteKingLocation = (move.endRow, move.endCol)
+        elif move.pieceMoved == 'bK':
+            self.blackKingLocation = (move.endRow, move.endCol)
+
+
+
 
     """
     Undo the last move made
@@ -45,12 +55,38 @@ class GameState():
             self.board[move.startRow][move.startCol] = move.pieceMoved
             self.board[move.endRow][move.endCol] = move.pieceCaptured
             self.whiteToMove = not self.whiteToMove
+            #update King Position if needed
+            if move.pieceMoved == 'wK':
+                self.whiteKingLocation = (move.endRow, move.endCol)
+            elif move.pieceMoved == 'bK':
+                self.blackKingLocation = (move.endRow, move.endCol)
+
+    def inCheck(self):
+        if self.WhiteToMove:
+            return self.squareUnder
+    """
+    Determine if the current player is under attack
+    """
+    def squareUnderAttack(self):
+        pass
 
     """
     All moves considering checks
     """
     def getValidMoves(self):
-         return self.getAllPossibleMoves() #for now we will not worry about checks
+         #naive algorithm
+         #1) generate all the moves
+         moves = self.getAllPossibleMoves()
+         #2) for each move, make the move
+         for i in range(len(moves)-1, -1, -1): #when removing from a list go backwards through that list
+            self.makeMove(moves[i])            
+         #3) generate all the opponent's moves
+         oppMoves = self.getAllPossibleMoves()
+         #4) for each of your opponent's moves, see if they attack your king
+         #5) if they do attack your king, not a valid move
+
+
+         return moves
 
     """
     All moves without considering checks
@@ -225,9 +261,7 @@ class GameState():
             if 0 <= endRow < 8 and 0 <= endCol < 8:
                 if self.board[endRow][endCol][0] != allyPiece:
                     moves.append(Move((row, col), (endRow, endCol), self.board))
-                
-            
-        
+
 
     """
     Get all the Bishop moves for the Bishop located at the row, col and add these moves to the list
@@ -273,9 +307,6 @@ class GameState():
                 piece = self.board[endRow][endCol]
                 if piece == "--" or piece[0] == enemyPiece:
                     moves.append(Move((row, col), (endRow, endCol), self.board))
-
-
-
         
 class Move():
 
@@ -308,7 +339,6 @@ class Move():
             return self.moveID == other.moveID
         else:
             return False
-
     
     def getChessNotation(self):
         #return self.getRankFile(self.startRow, self.startCol) + " "+ self.getRankFile(self.endRow, self.endCol)
@@ -318,7 +348,4 @@ class Move():
         return piece + self.getRankFile(self.startRow, self.startCol) + " -> " + piece + self.getRankFile(self.endRow, self.endCol)
 
     def getRankFile(self, row, col):
-        return self.colsToFiles[col] + self.rowsToRanks[row] #concatinate to get Notation of a piece like '1a'
-
-
-  
+        return self.colsToFiles[col] + self.rowsToRanks[row] #concatinate to get Notation of a piece like '1a'  
