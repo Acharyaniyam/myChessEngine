@@ -153,12 +153,30 @@ class GameState():
         #check outward from king for pins and checks, keep track of pins
         directions = ((1,0), (0,1), (-1,0), (0,-1), (1,1), (1,-1), (-1,1), (-1,-1))
         for direction in directions:
+            possiblePin = ()
             for i in range(1,8):
                 endRow = startRow + direction[0] * i
                 endCol = startCol + direction[1] * i
                 if 0 <= endRow < 8 and 0 <= endCol < 8:
                     piece = self.board[endRow][endCol]
-                    if             
+                    if piece[0] == allyColor:
+                        if possiblePin == (): #1st allied piece could be pinned
+                            possiblePin(endRow, endCol, direction[0], direction[1])
+                        else: #2nd allied piece, so no pin or check possible in this direction
+                            break
+                    elif piece[0] == enemyColor:
+                        type = piece[1]
+                        #5 possibilities here in this complex conditional:
+                        #1.) orthogonally away from king and piece is a rook
+                        #2.) diagonally away from king and piece is a bishop
+                        #3.) 1 square away diagonally from king and piece is a pawn
+                        #4.) any direction and piece is a queen
+                        #5.) any direction 1 square away and piece is a king (this is necessary to prevent a king move to a square controlled by another king)
+                        if (0 <= j <= 3 and )
+
+
+
+
 
 
 
