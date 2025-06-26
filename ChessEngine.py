@@ -25,9 +25,10 @@ class GameState():
         self.moveLog = []
         self.whiteKingLocation = (7,4)
         self.blackKingLocation = (0,4)
-        self.checkMate = False
-        self.staleMate = False
-
+        #self.checkMate = False
+        #self.staleMate = False
+        self.pins = []
+        self.checks = []
 
     """
     Takes a move as a paramater and executes it (will not work for castling, en passant, and pawn promotion)
@@ -68,6 +69,7 @@ class GameState():
     All moves considering checks
     """
     def getValidMoves(self):
+        '''
          #naive algorithm
          #1) generate all the moves
         moves = self.getAllPossibleMoves()
@@ -91,6 +93,8 @@ class GameState():
             self.inCheck = False #Because if we checkmate or stalemate and undo a move, the self.checkMate will still be true
             self.staleMate = False
         return moves
+        '''
+        #advanced algorithm
     
     """
     Determine if the current player is under attack
@@ -127,6 +131,38 @@ class GameState():
                     piece = self.board[row][col][1]
                     self.moveFunctions[piece](row, col, moves) #calls the appropriate move function based on piece type
         return moves
+
+    """
+    Returns if the player is in check, a list of pins, and a list of checks
+    """
+    def checkForPinsAndChecks(self):
+        pins = [] #squares where the allied pinned piece is and direction pinned from
+        checks = [] #squares where enemy is applying a check
+        inCheck = False
+        if self.whiteToMove:
+            enemyColor = 'b'
+            allyColor = 'w'
+            startRow = self.whiteKingLocation[0]
+            startCol = self.whiteKingLocation[1]
+        else:
+            enemyColor = 'w'
+            allyColor = 'b'
+            startCol = self.blackKingLocation[0]
+            startCol = self.blackKingLocation[1]
+
+        #check outward from king for pins and checks, keep track of pins
+        directions = ((1,0), (0,1), (-1,0), (0,-1), (1,1), (1,-1), (-1,1), (-1,-1))
+        for direction in directions:
+            for i in range(1,8):
+                endRow = startRow + direction[0] * i
+                endCol = startCol + direction[1] * i
+                if 0 <= endRow < 8 and 0 <= endCol < 8:
+                    piece = self.board[endRow][endCol]
+                    if             
+
+
+
+
 
 
     """
