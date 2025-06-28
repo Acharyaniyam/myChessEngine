@@ -95,6 +95,7 @@ class GameState():
         return moves
         '''
         #advanced algorithm
+        moves = []
     
     """
     Determine if the current player is under attack
@@ -151,8 +152,9 @@ class GameState():
             startCol = self.blackKingLocation[1]
 
         #check outward from king for pins and checks, keep track of pins
-        directions = ((1,0), (0,1), (-1,0), (0,-1), (1,1), (1,-1), (-1,1), (-1,-1))
-        for direction in directions:
+        directions = ((-1,0), (0,-1), (1,0), (0,1), (-1,-1), (-1,1), (1, -1), (1,1)) #first 3 are orthogonal and next 3 are diagonal
+        for j in range(len(directions)):
+            d = directions[j]
             possiblePin = ()
             for i in range(1,8):
                 endRow = startRow + direction[0] * i
@@ -172,7 +174,36 @@ class GameState():
                         #3.) 1 square away diagonally from king and piece is a pawn
                         #4.) any direction and piece is a queen
                         #5.) any direction 1 square away and piece is a king (this is necessary to prevent a king move to a square controlled by another king)
-                        if (0 <= j <= 3 and )
+                        if (0 <= j <= 3 and type == 'R') or \ 
+                            (4 <= j <= 7 and type == 'B') or \ 
+                            (type == 'Q') or (i == 1 and type == 'K') #if the piece is a king and is 1 away
+                            (i == 1 and type == 'p' and (enemyColor == 'w' and 6 <= j <= 7) or (enemyColor == 'b' and 4 <= j <= 5)):
+                            if possiblePin == (): #no piece blocking, so check
+                                inCheck = True
+                                checks.append(endRow, endCol, d[0], d[1])
+                                break
+                            else: #piece blocking so pin
+                                pins.append(possiblePin)
+                                break
+                        else: #enemy piece not applying checks: #might not need this break
+                            break
+                else:
+                    break #off board
+        
+        #check for knight checks
+        knightMoves = ((-2, -1), (2,1), (2,-1), (-2,1), (-1,-2), (-1,2), (1,-2), (1,2))
+        for m in knightMoves:
+            endRow = row + m[0]
+            endCol = col + m[1]
+            if 0 <= endRow < 8 and 0 <= endCol < 8:
+                piece = self.board[endRow][endCol]
+                if piece[0] == enemyColor and piece[1] == 'N': #every knight attacking king
+                    incheck = True
+                    checks.append(endRow, endCol, m[0], m[1])
+        return inCheck, pins, checks
+
+
+
 
 
 
